@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
+import SupabaseProvider from "./supabase-provider";
 
 export const metadata: Metadata = {
   title: "Twitter Clone",
@@ -16,7 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body>
+        <SupabaseProvider>{children}</SupabaseProvider>
+        </body>
     </html>
   );
 }
