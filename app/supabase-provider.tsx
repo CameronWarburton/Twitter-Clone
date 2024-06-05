@@ -1,11 +1,15 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
+import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 
 import type { SupabaseClient } from "@supabase/auth-helpers-nextjs";
 import type { Database } from "@/lib/supabase.types";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Toaster, toast } from "sonner";
 
 type SupabaseContext = {
   supabase: SupabaseClient<Database>;
@@ -18,14 +22,24 @@ export default function SupabaseProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [supabase] = useState(() => createBrowserSupabaseClient());
+  const [supabase] = useState(() => createPagesBrowserClient());
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(() => {
       router.refresh();
+    });
+
+    supabase.auth.getSession().then((res) => {
+      if (!res.data.session) {
+        setIsOpen(true);
+      }
     });
 
     return () => {
@@ -35,7 +49,60 @@ export default function SupabaseProvider({
 
   return (
     <Context.Provider value={{ supabase }}>
-        <>{children}</>
+      <>
+        <Toaster />
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogContent className="p-6">
+            <h3 className="text-lg my-1">Please sign in to continue</h3>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+
+                // first check if the username exists or not
+                const { data, error } = await supabase
+                  .from("profiles")
+                  .select()
+                  .eq("username", username.trim());
+
+                if (data) {
+                  console.log(data);
+                  return toast.error(
+                    "username already exists, please use another"
+                  );
+                }
+
+                await supabase.auth.signInWithOtp({
+                  email: email.trim(),
+                  options: {
+                    data: {
+                      username,
+                    },
+                  },
+                });
+              }}
+            >
+              <Input
+                type="email"
+                placeholder="email"
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <Input
+                type="text"
+                placeholder="username"
+                min={3}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+              <p className="text-sm text-gray-900 my-2">
+                you will recieve a login magic link here!
+              </p>
+              <div className="flex w-full justify-end">
+                <Button>Login</Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+        {children}
+      </>
     </Context.Provider>
   );
 }

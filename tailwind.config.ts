@@ -52,6 +52,7 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        twitterColor: "#00acee",
       },
       borderRadius: {
         lg: "var(--radius)",
