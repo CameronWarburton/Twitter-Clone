@@ -29,6 +29,8 @@ export default function SupabaseProvider({
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
 
+  const [isloading, setIsLoading] = useState(false)
+
   useEffect(() => {
     const {
       data: { subscription },
@@ -58,14 +60,15 @@ export default function SupabaseProvider({
               onSubmit={async (e) => {
                 e.preventDefault();
 
+                setIsLoading(true)
+
                 // first check if the username exists or not
                 const { data, error } = await supabase
                   .from("profiles")
                   .select()
                   .eq("username", username.trim());
 
-                if (data) {
-                  console.log(data);
+                if (data && data?.length > 0) {
                   return toast.error(
                     "username already exists, please use another"
                   );
@@ -79,6 +82,8 @@ export default function SupabaseProvider({
                     },
                   },
                 });
+
+                setIsLoading(false)
               }}
             >
               <Input
@@ -91,12 +96,13 @@ export default function SupabaseProvider({
                 placeholder="username"
                 min={3}
                 onChange={(e) => setUsername(e.target.value)}
+                className="my-2"
               />
               <p className="text-sm text-gray-900 my-2">
                 you will recieve a login magic link here!
               </p>
               <div className="flex w-full justify-end">
-                <Button>Login</Button>
+                <Button disabled={isloading}>Login</Button>
               </div>
             </form>
           </DialogContent>
