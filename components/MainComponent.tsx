@@ -1,13 +1,18 @@
-"use client";
-
 import { AiOutlineHeart, AiOutlineRetweet } from "react-icons/ai";
 import { BsChat, BsDot, BsThreeDots } from "react-icons/bs";
 import { IoShareOutline, IoStatsChart } from "react-icons/io5";
-import ComposeTweet from "./server-component/compose-tweet";
+import ComposeTweet from "./server-components/compose-tweet";
+
+// const getTweets = async () => {
+
+// }
 
 const MainComponent = () => {
+
+
+
   return (
-    <main className="flex w-full xl:w-[50%] h-full min-h-screen flex-col border-l-[0.5px] border-r-[0.5px] border-gray-600">
+    <main className="flex w-full h-full min-h-screen flex-col border-l-[0.5px] border-r-[0.5px] border-gray-600">
       <h1 className="text-xl font-bold p-6 backdrop-blur bg-black/10 sticky top-0">
         Home
       </h1>
@@ -15,16 +20,16 @@ const MainComponent = () => {
         <div className="w-11 h-11 bg-slate-400 rounded-full flex-none"></div>
         <ComposeTweet />
       </div>
-      <div className="flex flex-col">
+      <div className="w-full">
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
-            className="border-b-[0.5px] border-gray-600 p-2 flex space-x-4"
+            className="border-b-[0.5px] border-gray-600 p-2 flex space-x-4 w-full"
           >
             <div>
               <div className="w-10 h-10 bg-slate-200 rounded-full" />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col w-full">
               <div className="flex items-center w-full justify-between">
                 <div className="flex items-center space-x-1 w-full">
                   <div className="font-bold">Cameron</div>
