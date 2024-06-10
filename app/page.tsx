@@ -1,6 +1,6 @@
-import LeftSidebar from "../components/LeftSidebar";
-import MainComponent from "../components/MainComponent";
-import RigthSection from "../components/RigthSection";
+import LeftSidebar from "../components/left-sidebar";
+import MainComponent from "../components/main-component";
+import RigthSection from "../components/right-section";
 
 export const revalidate = 0;
 
