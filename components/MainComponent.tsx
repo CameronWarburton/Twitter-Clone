@@ -2,40 +2,16 @@ import { AiOutlineHeart, AiOutlineRetweet } from "react-icons/ai";
 import { BsChat, BsDot, BsThreeDots } from "react-icons/bs";
 import { IoShareOutline, IoStatsChart } from "react-icons/io5";
 import ComposeTweet from "./server-components/compose-tweet";
-import { SupabaseClient } from "@supabase/supabase-js";
-import { Database } from "@/lib/supabase.types";
+import { getTweets } from "@/lib/supabase/getTweets"
+import dayjs from "dayjs";
+import relativeTime from 'dayjs/plugin/relativeTime'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+dayjs.extend(relativeTime)
 
-const getTweets = async () => {
-  if (supabaseUrl && supabaseSecretKey) {
-    const supabaseServer = new SupabaseClient(supabaseUrl, supabaseSecretKey);
 
-  return await supabaseServer
-      .from("tweets")
-      .select(
-        `
-      *,
-      profiles (
-      full_name,
-      username
-      )
-      `
-      )
-      .returns<
-        (Database["public"]["Tables"]["tweets"]["Row"] & {
-          profiles: Pick<Database["public"]["Tables"]["profiles"]["Row"], 'full_name' | 'username'>;
-        })[]
-      >();
-
-    
-  }
-};
 
 const MainComponent = async () => {
   const res = await getTweets();
-
 
   return (
     <main className="flex w-full h-full min-h-screen flex-col border-l-[0.5px] border-r-[0.5px] border-gray-600">
@@ -50,7 +26,7 @@ const MainComponent = async () => {
       {
         res?.error && <div>Something wrong with the server</div>
       }
-        {res?.data && res.data.map((tweet, i) => (
+        {res?.data && res.data.map((tweet) => (
           <div
             key={tweet.id}
             className="border-b-[0.5px] border-gray-600 p-2 flex space-x-4 w-full"
@@ -66,18 +42,16 @@ const MainComponent = async () => {
                   <div className="text-gray-500">
                     <BsDot />
                   </div>
-                  <div className="text-gray-500">1 hour ago</div>
+                  <div className="text-gray-500">
+                    {dayjs(tweet.created_at).fromNow()}
+                  </div>
                 </div>
                 <div>
                   <BsThreeDots />
                 </div>
               </div>
               <div className="text-white text-base">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Voluptatum rerum beatae sed eum sit illum debitis officiis
-                corrupti animi quaerat? Consequuntur, distinctio voluptatem esse
-                sed recusandae dolorem facere ut harum tenetur obcaecati
-                possimus commodi rerum ratione voluptatum?
+                {tweet.text}
               </div>
               <div className="bg-slate-400 aspect-square w-full h-80 rounded-xl mt-2"></div>
               <div className="flex items-center justify-start space-x-20 mt-2 w-full">
