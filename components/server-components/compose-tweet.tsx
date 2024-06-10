@@ -22,7 +22,7 @@ const ComposeTweet = () => {
     const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
 
     if (!supabaseUrl || !supabaseSecretKey)
-      return { error: { message: "supabase credentials are not provided" } as any };
+      return { error: { message: "supabase credentials are not provided" } };
 
     const supabaseServer = new SupabaseClient(supabaseUrl, supabaseSecretKey);
 

@@ -2,13 +2,39 @@ import { AiOutlineHeart, AiOutlineRetweet } from "react-icons/ai";
 import { BsChat, BsDot, BsThreeDots } from "react-icons/bs";
 import { IoShareOutline, IoStatsChart } from "react-icons/io5";
 import ComposeTweet from "./server-components/compose-tweet";
+import { SupabaseClient } from "@supabase/supabase-js";
+import { Database } from "@/lib/supabase.types";
 
-// const getTweets = async () => {
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
 
-// }
+const getTweets = async () => {
+  if (supabaseUrl && supabaseSecretKey) {
+    const supabaseServer = new SupabaseClient(supabaseUrl, supabaseSecretKey);
 
-const MainComponent = () => {
+  return await supabaseServer
+      .from("tweets")
+      .select(
+        `
+      *,
+      profiles (
+      full_name,
+      username
+      )
+      `
+      )
+      .returns<
+        (Database["public"]["Tables"]["tweets"]["Row"] & {
+          profiles: Pick<Database["public"]["Tables"]["profiles"]["Row"], 'full_name' | 'username'>;
+        })[]
+      >();
 
+    
+  }
+};
+
+const MainComponent = async () => {
+  const res = await getTweets();
 
 
   return (
@@ -21,9 +47,12 @@ const MainComponent = () => {
         <ComposeTweet />
       </div>
       <div className="w-full">
-        {Array.from({ length: 5 }).map((_, i) => (
+      {
+        res?.error && <div>Something wrong with the server</div>
+      }
+        {res?.data && res.data.map((tweet, i) => (
           <div
-            key={i}
+            key={tweet.id}
             className="border-b-[0.5px] border-gray-600 p-2 flex space-x-4 w-full"
           >
             <div>
@@ -32,8 +61,8 @@ const MainComponent = () => {
             <div className="flex flex-col w-full">
               <div className="flex items-center w-full justify-between">
                 <div className="flex items-center space-x-1 w-full">
-                  <div className="font-bold">Cameron</div>
-                  <div className="text-gray-500">@CameronW</div>
+                  <div className="font-bold">{tweet.profiles.full_name ?? ""}</div>
+                  <div className="text-gray-500">@{tweet.profiles.username}</div>
                   <div className="text-gray-500">
                     <BsDot />
                   </div>
