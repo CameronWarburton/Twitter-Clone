@@ -1,7 +1,8 @@
 import { Database } from "@/lib/supabase.types";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import FormClientComponent from "./formClientComponent";
+import FormClientComponent from "./FormClientComponent";
 import { randomUUID } from "crypto";
+import {  SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import React from "react";
 
@@ -13,15 +14,23 @@ const ComposeTweet = () => {
 
     if (!tweet) return;
 
-    const supabase = createServerComponentClient<Database>({
-      cookies,
-    });
+    const supabaseClient = createServerComponentClient({
+      cookies
+    })
 
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+
+    if (!supabaseUrl || !supabaseSecretKey)
+      return { error: { message: "supabase credentials are not provided" } as any };
+
+    const supabaseServer = new SupabaseClient(supabaseUrl, supabaseSecretKey);
+
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
 
     if (userError) return;
 
-    const { data, error } = await supabase.from("tweets").insert({
+    const { data, error } = await supabaseServer.from("tweets").insert({
       profile_id: userData.user.id,
       text: tweet.toString(),
       id: randomUUID(),

@@ -2,19 +2,36 @@
 
 import { PostgrestError } from "@supabase/supabase-js";
 import React from "react";
+import { toast } from "sonner";
 
 type FormClientComponentProps = {
-  serverAction: (formData: FormData) => Promise<{data: null; error: PostgrestError | null;}| undefined>
+  serverAction: (
+    formData: FormData
+  ) => Promise<
+    | { error: { message: string }; data?: undefined }
+    | { data: null; error: PostgrestError | null }
+    | undefined
+  >;
 };
 
 const FormClientComponent = ({ serverAction }: FormClientComponentProps) => {
   const handleSubmitTweet = async (data: any) => {
-    const res = await serverAction(data);
-    console.log(res);
+    try {
+      const res = await serverAction(data);
+      if (res?.error) {
+        return toast.error(res.error.message);
+      }
+      toast.success("Tweet sent successfully!");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
-    <form action={handleSubmitTweet as any} className="flex flex-col w-full h-full">
+    <form
+      action={handleSubmitTweet as any}
+      className="flex flex-col w-full h-full"
+    >
       <input
         type="text"
         name="tweet"
