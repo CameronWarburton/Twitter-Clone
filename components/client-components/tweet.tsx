@@ -3,12 +3,13 @@
 import { AiOutlineHeart, AiOutlineRetweet } from "react-icons/ai";
 import { BsChat, BsDot, BsThreeDots } from "react-icons/bs";
 import { IoShareOutline, IoStatsChart } from "react-icons/io5";
-import { TweetType, likeTweet } from "@/lib/supabase/getTweets";
-import React, { useTransition } from "react";
+import { TweetType } from "@/lib/supabase/queries";
+import { likeTweet } from "@/lib/supabase/mutation";
+import React, { useState, useTransition } from "react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { useUser } from "@supabase/auth-helpers-react";
 import { toast } from "sonner";
+import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
 
 dayjs.extend(relativeTime);
 
@@ -17,7 +18,7 @@ type TweetProps = {
 };
 
 const Tweet = ({ tweet }: TweetProps) => {
-  const user = useUser();
+  const [supabase] = useState(() => createPagesBrowserClient());
   let [isLikePending, startTransition] = useTransition();
 
   return (
@@ -55,19 +56,23 @@ const Tweet = ({ tweet }: TweetProps) => {
               <AiOutlineRetweet />
             </div>
             <button
+            disabled={isLikePending}
               onClick={() => {
-
-                console.log(user)
-                if (user) {
-                  startTransition(() =>
-                    likeTweet({
-                      tweetId: tweet.id,
-                      userId: user.id,
-                    })
-                  );
-                } else {
-                  toast("please login to like a tweet");
-                }
+                supabase.auth.getUser().then((res) => {
+                  if (res.data && res.data.user) {
+                    const user = res.data.user;
+                    startTransition(() =>
+                      likeTweet({
+                        tweetId: tweet.id,
+                        userId: user.id,
+                      })
+                    );
+                  } else {
+                    toast("please login to like a tweet");
+                  }
+                }).catch(() => {
+                  toast.error('authentication failed')
+                })
               }}
               className="rounded-full hover:bg-white/10 transition duration-200 p-3 cursor-pointer"
             >
