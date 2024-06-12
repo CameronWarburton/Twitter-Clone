@@ -1,25 +1,26 @@
-"use client";
+"use server";
 
-import { AiOutlineHeart, AiOutlineRetweet } from "react-icons/ai";
+import { AiOutlineRetweet } from "react-icons/ai";
 import { BsChat, BsDot, BsThreeDots } from "react-icons/bs";
 import { IoShareOutline, IoStatsChart } from "react-icons/io5";
-import { TweetType } from "@/lib/supabase/queries";
-import { likeTweet } from "@/lib/supabase/mutation";
-import React, { useState, useTransition } from "react";
+import { TweetType, getLikesCount, isLiked } from "@/lib/supabase/queries";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { toast } from "sonner";
-import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
+import LikeButton from "./like-button";
 
 dayjs.extend(relativeTime);
 
 type TweetProps = {
   tweet: TweetType;
+  currentUserId?: string;
 };
 
-const Tweet = ({ tweet }: TweetProps) => {
-  const [supabase] = useState(() => createPagesBrowserClient());
-  let [isLikePending, startTransition] = useTransition();
+const Tweet = async ({ tweet, currentUserId }: TweetProps) => {
+  const getTweetLikesCount = await getLikesCount(tweet.id);
+  const isUserHasLiked = await isLiked({
+    tweetId: tweet.id,
+    userId: currentUserId,
+  });
 
   return (
     <div>
@@ -55,29 +56,11 @@ const Tweet = ({ tweet }: TweetProps) => {
             <div className="rounded-full hover:bg-white/10 transition duration-200 p-3 cursor-pointer">
               <AiOutlineRetweet />
             </div>
-            <button
-            disabled={isLikePending}
-              onClick={() => {
-                supabase.auth.getUser().then((res) => {
-                  if (res.data && res.data.user) {
-                    const user = res.data.user;
-                    startTransition(() =>
-                      likeTweet({
-                        tweetId: tweet.id,
-                        userId: user.id,
-                      })
-                    );
-                  } else {
-                    toast("please login to like a tweet");
-                  }
-                }).catch(() => {
-                  toast.error('authentication failed')
-                })
-              }}
-              className="rounded-full hover:bg-white/10 transition duration-200 p-3 cursor-pointer"
-            >
-              <AiOutlineHeart />
-            </button>
+            <LikeButton
+              tweetId={tweet.id}
+              likesCount={getTweetLikesCount.count}
+              isUserHasLiked={isUserHasLiked}
+            />
             <div className="rounded-full hover:bg-white/10 transition duration-200 p-3 cursor-pointer">
               <IoStatsChart />
             </div>
