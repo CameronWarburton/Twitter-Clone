@@ -14,32 +14,52 @@ export type TweetType = Database["public"]["Tables"]["tweets"]["Row"] & {
   >;
 };
 
-export const getTweets = async () => {
-  const ret = await pool.query(`SELECT tweets.*, COUNT(likes.id) AS likes_count,
-    EXISTS (
+const queryWithCurrentUserId = `
+SELECT 
+  tweets.*, 
+  profiles.username, 
+  profiles.full_name, 
+  COUNT(likes.id) AS likes_count,
+  EXISTS (
     SELECT 1
     FROM likes
     WHERE likes.tweet_id = tweets.id
     AND likes.user_id = $1
-    ) AS user_has_liked
-     FROM tweets
-     LEFT JOIN likes ON tweets.id = likes.tweets_id
-     GROUP BY tweets.id
-     ORDER BY tweets.created_at DESC;
-     `, []);
+  ) AS user_has_liked
+FROM tweets
+LEFT JOIN likes ON tweets.id = likes.tweet_id
+JOIN profiles ON tweets.profile_id = profiles.id
+GROUP BY tweets.id, profiles.username, profiles.full_name
+ORDER BY tweets.created_at DESC;
+`;
 
-  return await supabaseServer
-    .from("tweets")
-    .select(
-      `
-        *,
-        profiles (
-        full_name,
-        username
-        )
-        `
-    )
-    .returns<TweetType[]>();
+const queryWithoutCurrentUserId = `
+SELECT 
+  tweets.*, 
+  profiles.username, 
+  profiles.full_name, 
+  COUNT(likes.id) AS likes_count
+FROM tweets
+LEFT JOIN likes ON tweets.id = likes.tweet_id
+JOIN profiles ON tweets.profile_id = profiles.id
+GROUP BY tweets.id, profiles.username, profiles.full_name
+ORDER BY tweets.created_at DESC;
+`;
+
+export const getTweets = async (currentUserID?: string) => {
+  let query = pool.query(queryWithoutCurrentUserId);
+
+  if (currentUserID) {
+    query = pool.query(queryWithCurrentUserId, [currentUserID]);
+  }
+
+  try {
+    const res = await query;
+    return { data: res.rows };
+  } catch (error) {
+    console.log(error);
+    return { error: "something wrong with querying the db" };
+  }
 };
 
 export const getLikesCount = async (tweetId: string) => {

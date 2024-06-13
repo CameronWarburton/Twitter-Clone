@@ -5,13 +5,16 @@ import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 
 const MainComponent = async () => {
-  const res = await getTweets();
   const supabaseClient = createServerComponentClient({
     cookies,
   });
 
   const { data: userData, error: userError } =
     await supabaseClient.auth.getUser();
+
+  const res = await getTweets(userData.user?.id);
+
+  console.log()
 
   return (
     <main className="flex w-full h-full min-h-screen flex-col border-l-[0.5px] border-r-[0.5px] border-gray-600">
@@ -25,7 +28,7 @@ const MainComponent = async () => {
       <div className="w-full">
         {res?.error && <div>Something wrong with the server</div>}
         {res?.data &&
-          res.data.map((tweet) => (
+          res.data.map((tweet:any) => (
             <Tweet
               key={tweet.id}
               tweet={tweet}
