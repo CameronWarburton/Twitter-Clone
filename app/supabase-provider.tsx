@@ -28,8 +28,9 @@ export default function SupabaseProvider({
 
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
+  const [fullName, setFullName] = useState("")
 
-  const [isloading, setIsLoading] = useState(false)
+  const [isloading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const {
@@ -60,7 +61,7 @@ export default function SupabaseProvider({
               onSubmit={async (e) => {
                 e.preventDefault();
 
-                setIsLoading(true)
+                setIsLoading(true);
 
                 // first check if the username exists or not
                 const { data, error } = await supabase
@@ -74,28 +75,44 @@ export default function SupabaseProvider({
                   );
                 }
 
-                await supabase.auth.signInWithOtp({
-                  email: email.trim(),
-                  options: {
-                    data: {
-                      username,
+                const { data: signUpData, error: signUpError } =
+                  await supabase.auth.signInWithOtp({
+                    email: email.trim(),
+                    options: {
+                      data: {
+                        username,
+                        full_name:fullName
+                      },
                     },
-                  },
-                });
+                  });
+                  console.log(signUpError)
 
-                setIsLoading(false)
+                if (signUpError) {
+                  return toast.error(signUpError.message);
+                }
+                toast.success("magic link sent successfully");
+                setIsLoading(false);
               }}
             >
               <Input
                 type="email"
                 placeholder="email"
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
               <Input
                 type="text"
                 placeholder="username"
                 min={3}
+                value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                className="my-2"
+              />
+              <Input
+                type="text"
+                placeholder="your name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 className="my-2"
               />
               <p className="text-sm text-gray-900 my-2">

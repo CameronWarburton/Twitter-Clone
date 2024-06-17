@@ -25,7 +25,7 @@ const MainComponent = async () => {
         <div className="w-11 h-11 bg-slate-400 rounded-full flex-none"></div>
         <ComposeTweet />
       </div>
-      <div className="w-full">
+      {/* <div className="w-full">
         {res?.error && <div>Something wrong with the server</div>}
         {res?.data &&
           res.data.map((tweet:any) => (
@@ -35,7 +35,7 @@ const MainComponent = async () => {
               currentUserId={userData.user?.id}
             />
           ))}
-      </div>
+      </div> */}
     </main>
   );
 };

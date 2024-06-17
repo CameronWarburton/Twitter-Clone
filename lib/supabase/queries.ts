@@ -2,6 +2,9 @@
 
 import { Database } from "../supabase.types";
 import { supabaseServer } from ".";
+import { db } from "../db";
+import { likes, profiles, tweets } from "../db/schema";
+import { desc, eq } from "drizzle-orm";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
@@ -14,10 +17,10 @@ export type TweetType = Database["public"]["Tables"]["tweets"]["Row"] & {
 };
 
 // const queryWithCurrentUserId = `
-// SELECT 
-//   tweets.*, 
-//   profiles.username, 
-//   profiles.full_name, 
+// SELECT
+//   tweets.*,
+//   profiles.username,
+//   profiles.full_name,
 //   COUNT(likes.id) AS likes_count,
 //   EXISTS (
 //     SELECT 1
@@ -33,10 +36,10 @@ export type TweetType = Database["public"]["Tables"]["tweets"]["Row"] & {
 // `;
 
 // const queryWithoutCurrentUserId = `
-// SELECT 
-//   tweets.*, 
-//   profiles.username, 
-//   profiles.full_name, 
+// SELECT
+//   tweets.*,
+//   profiles.username,
+//   profiles.full_name,
 //   COUNT(likes.id) AS likes_count
 // FROM tweets
 // LEFT JOIN likes ON tweets.id = likes.tweet_id
@@ -46,15 +49,28 @@ export type TweetType = Database["public"]["Tables"]["tweets"]["Row"] & {
 // `;
 
 export const getTweets = async (currentUserID?: string) => {
-  let query = pool.query(queryWithoutCurrentUserId);
-
-  if (currentUserID) {
-    query = pool.query(queryWithCurrentUserId, [currentUserID]);
-  }
-
   try {
-    const res = await query;
-    return { data: res.rows };
+    // const res = await db.query.tweets.findMany({
+    //   with: {
+    //     profile: {
+    //       columns: {
+    //         username: true,
+    //         fullName: true,
+    //       },
+    //     },
+    //   },
+    // });
+    console.log(currentUserID);
+
+    const res = await db
+      .select()
+      .from(tweets)
+      .leftJoin(likes, eq(tweets.id, likes.tweetId))
+      .innerJoin(profiles, eq(tweets.profileId, profiles.id))
+      .orderBy(desc(tweets.createdAt))
+      .limit(1);
+
+    console.log(res);
   } catch (error) {
     console.log(error);
     return { error: "something wrong with querying the db" };

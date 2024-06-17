@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -16,6 +17,13 @@ export const profiles = pgTable("profiles", {
   fullName: text("full_name").notNull(),
 });
 
+export const profilesRelations = relations(profiles, ({ one, many }) => ({
+  tweets: many(tweets),
+  likes: many(likes),
+  bookmarks: many(bookmarks),
+  replies: many(replies),
+}));
+
 export const tweets = pgTable("tweets", {
   id: uuid("id").primaryKey().defaultRandom(),
   text: text("text").notNull(),
@@ -26,6 +34,12 @@ export const tweets = pgTable("tweets", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const tweetsRelations = relations(tweets, ({ one, many }) => ({
+  profile: one(profiles, {
+    fields: [tweets.profileId],
+    references: [profiles.id],
+  }),
+}));
 
 export const hashtags = pgTable("hashtags", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -57,9 +71,15 @@ export const replies = pgTable("replies", {
     .notNull()
     .references(() => profiles.id),
   tweetId: uuid("tweet_id").references(() => tweets.id),
-  replyId: uuid("reply_id").references(():AnyPgColumn => replies.id), // self reference
-}
-);
+  replyId: uuid("reply_id").references((): AnyPgColumn => replies.id), // self reference
+});
+
+export const repliesRelations = relations(replies, ({ one, many }) => ({
+  profile: one(profiles, {
+    fields: [replies.userId],
+    references: [profiles.id],
+  }),
+}));
 
 export const likes = pgTable(
   "likes",
@@ -81,6 +101,13 @@ export const likes = pgTable(
   })
 );
 
+export const likesRelations = relations(likes, ({ one, many }) => ({
+  profile: one(profiles, {
+    fields: [likes.userId],
+    references: [profiles.id],
+  }),
+}));
+
 export const bookmarks = pgTable(
   "bookmarks",
   {
@@ -100,3 +127,10 @@ export const bookmarks = pgTable(
     ),
   })
 );
+
+export const bookmarksRelations = relations(bookmarks, ({ one, many }) => ({
+  profile: one(profiles, {
+    fields: [bookmarks.userId],
+    references: [profiles.id],
+  }),
+}));
