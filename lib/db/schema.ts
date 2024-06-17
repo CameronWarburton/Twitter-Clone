@@ -11,6 +11,7 @@ import {
 export const profiles = pgTable("profiles", {
   id: uuid("id").primaryKey().defaultRandom(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
   username: text("username").notNull(),
   fullName: text("full_name").notNull(),
 });
