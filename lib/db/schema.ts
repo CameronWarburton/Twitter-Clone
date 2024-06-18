@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import {  InferSelectModel, relations } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -17,6 +17,8 @@ export const profiles = pgTable("profiles", {
   fullName: text("full_name").notNull(),
 });
 
+export type Profile = InferSelectModel<typeof profiles>
+
 export const profilesRelations = relations(profiles, ({ one, many }) => ({
   tweets: many(tweets),
   likes: many(likes),
@@ -33,6 +35,8 @@ export const tweets = pgTable("tweets", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export type Tweet = InferSelectModel<typeof tweets>
 
 export const tweetsRelations = relations(tweets, ({ one, many }) => ({
   profile: one(profiles, {

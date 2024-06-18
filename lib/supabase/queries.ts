@@ -60,6 +60,7 @@ export const getTweets = async (currentUserID?: string) => {
     //     },
     //   },
     // });
+    let err = ""
     console.log(currentUserID);
 
     const res = await db
@@ -68,9 +69,12 @@ export const getTweets = async (currentUserID?: string) => {
       .leftJoin(likes, eq(tweets.id, likes.tweetId))
       .innerJoin(profiles, eq(tweets.profileId, profiles.id))
       .orderBy(desc(tweets.createdAt))
-      .limit(1);
+      .limit(1)
+      .catch(() => {
+        err = "something went wrong while fetching all the tweets"
+      })
 
-    console.log(res);
+      return {data:res, error:err}
   } catch (error) {
     console.log(error);
     return { error: "something wrong with querying the db" };
