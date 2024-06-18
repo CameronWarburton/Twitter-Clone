@@ -7,43 +7,46 @@ import { TweetType, getLikesCount, isLiked } from "@/lib/supabase/queries";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import LikeButton from "./like-button";
-import { Profile, Tweet } from "@/lib/db/schema";
+import type { Profile, Tweet } from "@/lib/db/schema";
 
 dayjs.extend(relativeTime);
 
 type TweetProps = {
-  tweet: Profile & Tweet;
+  tweet: {
+    userProfile: Profile;
+    tweetDetails: Tweet;
+  };
   currentUserId?: string;
+  likesCount: number;
+  hasLiked: boolean;
 };
 
-const Tweet = async ({ tweet, currentUserId }: TweetProps) => {
-
+const Tweet = async ({ tweet, likesCount, hasLiked }: TweetProps) => {
   return (
     <div>
-      <div
-        key={tweet.id}
-        className="border-b-[0.5px] border-gray-600 p-2 flex space-x-4 w-full"
-      >
+      <div className="border-b-[0.5px] border-gray-600 p-2 flex space-x-4 w-full">
         <div>
           <div className="w-10 h-10 bg-slate-200 rounded-full" />
         </div>
         <div className="flex flex-col w-full">
           <div className="flex items-center w-full justify-between">
             <div className="flex items-center space-x-1 w-full">
-              <div className="font-bold">{tweet.fullName ?? ""}</div>
-              <div className="text-gray-500">@{tweet.username}</div>
+              <div className="font-bold">
+                {tweet.userProfile.fullName ?? ""}
+              </div>
+              <div className="text-gray-500">@{tweet.userProfile.username}</div>
               <div className="text-gray-500">
                 <BsDot />
               </div>
               <div className="text-gray-500">
-                {dayjs(tweet.createdAt).fromNow()}
+                {dayjs(tweet.tweetDetails.createdAt).fromNow()}
               </div>
             </div>
             <div>
               <BsThreeDots />
             </div>
           </div>
-          <div className="text-white text-base">{tweet.text}</div>
+          <div className="text-white text-base">{tweet.tweetDetails.text}</div>
           <div className="bg-slate-400 aspect-square w-full h-80 rounded-xl mt-2"></div>
           <div className="flex items-center justify-start space-x-20 mt-2 w-full">
             <div className="rounded-full hover:bg-white/10 transition duration-200 p-3 cursor-pointer">
@@ -53,9 +56,9 @@ const Tweet = async ({ tweet, currentUserId }: TweetProps) => {
               <AiOutlineRetweet />
             </div>
             <LikeButton
-              tweetId={tweet.id}
-              likesCount={0}
-              isUserHasLiked={false}
+              tweetId={tweet.tweetDetails.id}
+              likesCount={likesCount}
+              isUserHasLiked={hasLiked}
             />
             <div className="rounded-full hover:bg-white/10 transition duration-200 p-3 cursor-pointer">
               <IoStatsChart />

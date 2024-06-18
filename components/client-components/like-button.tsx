@@ -1,7 +1,6 @@
 "use client";
 
 import { likeTweet, unLikeTweet } from "@/lib/supabase/mutation";
-import { cn } from "@/lib/utils";
 import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
 import React, { useState, useTransition } from "react";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";

@@ -1,9 +1,9 @@
 "use server";
 
-import { randomUUID } from "crypto";
 import { supabaseServer } from ".";
-import { revalidate } from "@/app/page";
 import { revalidatePath } from "next/cache";
+import { db } from "../db";
+import { likes } from "../db/schema";
 
 export const likeTweet = async ({
   tweetId,
@@ -12,13 +12,17 @@ export const likeTweet = async ({
   tweetId: string;
   userId: string;
 }) => {
-  const { data, error } = await supabaseServer.from("likes").insert({
-    id: randomUUID(),
-    tweet_id: tweetId,
-    user_id: userId,
-  });
+  await db
+    .insert(likes)
+    .values({
+      tweetId,
+      userId,
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+
   revalidatePath("/");
-  console.log({ data, error });
 };
 export const unLikeTweet = async ({
   tweetId,

@@ -3,11 +3,8 @@
 import { Database } from "../supabase.types";
 import { supabaseServer } from ".";
 import { db } from "../db";
-import { likes, profiles, tweets } from "../db/schema";
-import { desc, eq } from "drizzle-orm";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+import { Like, Profile, Tweet, likes, profiles, tweets } from "../db/schema";
+import { and, desc, eq, exists } from "drizzle-orm";
 
 export type TweetType = Database["public"]["Tables"]["tweets"]["Row"] & {
   profiles: Pick<
@@ -16,68 +13,68 @@ export type TweetType = Database["public"]["Tables"]["tweets"]["Row"] & {
   >;
 };
 
-// const queryWithCurrentUserId = `
-// SELECT
-//   tweets.*,
-//   profiles.username,
-//   profiles.full_name,
-//   COUNT(likes.id) AS likes_count,
-//   EXISTS (
-//     SELECT 1
-//     FROM likes
-//     WHERE likes.tweet_id = tweets.id
-//     AND likes.user_id = $1
-//   ) AS user_has_liked
-// FROM tweets
-// LEFT JOIN likes ON tweets.id = likes.tweet_id
-// JOIN profiles ON tweets.profile_id = profiles.id
-// GROUP BY tweets.id, profiles.username, profiles.full_name
-// ORDER BY tweets.created_at DESC;
-// `;
-
-// const queryWithoutCurrentUserId = `
-// SELECT
-//   tweets.*,
-//   profiles.username,
-//   profiles.full_name,
-//   COUNT(likes.id) AS likes_count
-// FROM tweets
-// LEFT JOIN likes ON tweets.id = likes.tweet_id
-// JOIN profiles ON tweets.profile_id = profiles.id
-// GROUP BY tweets.id, profiles.username, profiles.full_name
-// ORDER BY tweets.created_at DESC;
-// `;
 
 export const getTweets = async (currentUserID?: string) => {
   try {
-    // const res = await db.query.tweets.findMany({
-    //   with: {
-    //     profile: {
-    //       columns: {
-    //         username: true,
-    //         fullName: true,
-    //       },
-    //     },
-    //   },
-    // });
-    let err = ""
-    console.log(currentUserID);
-
-    const res = await db
-      .select()
+    const rows = await db
+      .select({
+        ...(currentUserID
+          ? {
+              hasLiked: exists(
+                db
+                  .select()
+                  .from(likes)
+                  .where(
+                    and(
+                      eq(likes.tweetId, tweets.id),
+                      eq(likes.userId, currentUserID)
+                    )
+                  )
+              ),
+            }
+          : {}),
+        tweets,
+        likes,
+        profiles,
+      })
       .from(tweets)
       .leftJoin(likes, eq(tweets.id, likes.tweetId))
       .innerJoin(profiles, eq(tweets.profileId, profiles.id))
       .orderBy(desc(tweets.createdAt))
-      .limit(1)
+      .limit(10)
       .catch(() => {
-        err = "something went wrong while fetching all the tweets"
-      })
+        // err = "something went wrong while fetching all the tweets";
+      });
 
-      return {data:res, error:err}
+    if (rows) {
+      const result = rows.reduce<
+        Record<
+          string,
+          { tweet: Tweet; likes: Like[]; profile: Profile; hasLiked: boolean }
+        >
+      >((acc, row) => {
+        const tweet = row.tweets;
+        const like = row.likes;
+        const profile = row.profiles;
+        const hasLiked = Boolean(row.hasLiked);
+
+        if (!acc[tweet.id]) {
+          acc[tweet.id] = { tweet, likes: [], profile, hasLiked };
+        }
+
+        if (like) {
+          acc[tweet.id].likes.push(like);
+        }
+
+        return acc;
+      }, {});
+
+      const data = Object.values(result);
+      return data;
+    }
   } catch (error) {
     console.log(error);
-    return { error: "something wrong with querying the db" };
+    // return { error: "something went wrong with querying the db" }
   }
 };
 
