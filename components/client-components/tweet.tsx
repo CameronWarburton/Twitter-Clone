@@ -1,4 +1,4 @@
-"use server";
+"use client";
 
 import { AiOutlineRetweet } from "react-icons/ai";
 import { BsChat, BsDot, BsThreeDots } from "react-icons/bs";
@@ -8,6 +8,15 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import LikeButton from "./like-button";
 import type { Profile, Tweet } from "@/lib/db/schema";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 dayjs.extend(relativeTime);
 
@@ -23,7 +32,7 @@ type TweetProps = {
 
 const Tweet = async ({ tweet, likesCount, hasLiked }: TweetProps) => {
   return (
-    <div>
+    <>
       <div className="border-b-[0.5px] border-gray-600 p-2 flex space-x-4 w-full">
         <div>
           <div className="w-10 h-10 bg-slate-200 rounded-full" />
@@ -49,9 +58,25 @@ const Tweet = async ({ tweet, likesCount, hasLiked }: TweetProps) => {
           <div className="text-white text-base">{tweet.tweetDetails.text}</div>
           <div className="bg-slate-400 aspect-square w-full h-80 rounded-xl mt-2"></div>
           <div className="flex items-center justify-start space-x-20 mt-2 w-full">
-            <div className="rounded-full hover:bg-white/10 transition duration-200 p-3 cursor-pointer">
-              <BsChat />
-            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button
+                  onClick={() => {}}
+                  className="rounded-full hover:bg-white/10 transition duration-200 p-3 cursor-pointer"
+                >
+                  <BsChat />
+                </button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Are you absolutely sure?</DialogTitle>
+                  <DialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    your account and remove your data from our servers.
+                  </DialogDescription>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
             <div className="rounded-full hover:bg-white/10 transition duration-200 p-3 cursor-pointer">
               <AiOutlineRetweet />
             </div>
@@ -69,7 +94,7 @@ const Tweet = async ({ tweet, likesCount, hasLiked }: TweetProps) => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
