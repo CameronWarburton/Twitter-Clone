@@ -1,22 +1,14 @@
 "use client";
 
 import { AiOutlineRetweet } from "react-icons/ai";
-import { BsChat, BsDot, BsThreeDots } from "react-icons/bs";
+import {  BsDot, BsThreeDots } from "react-icons/bs";
 import { IoShareOutline, IoStatsChart } from "react-icons/io5";
 import { TweetType, getLikesCount, isLiked } from "@/lib/supabase/queries";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import LikeButton from "./like-button";
 import type { Profile, Tweet } from "@/lib/db/schema";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import ReplyDialog from "./reply-dialog";
 
 dayjs.extend(relativeTime);
 
@@ -58,25 +50,7 @@ const Tweet = async ({ tweet, likesCount, hasLiked }: TweetProps) => {
           <div className="text-white text-base">{tweet.tweetDetails.text}</div>
           <div className="bg-slate-400 aspect-square w-full h-80 rounded-xl mt-2"></div>
           <div className="flex items-center justify-start space-x-20 mt-2 w-full">
-            <Dialog>
-              <DialogTrigger asChild>
-                <button
-                  onClick={() => {}}
-                  className="rounded-full hover:bg-white/10 transition duration-200 p-3 cursor-pointer"
-                >
-                  <BsChat />
-                </button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Are you absolutely sure?</DialogTitle>
-                  <DialogDescription>
-                    This action cannot be undone. This will permanently delete
-                    your account and remove your data from our servers.
-                  </DialogDescription>
-                </DialogHeader>
-              </DialogContent>
-            </Dialog>
+            <ReplyDialog tweet={tweet}/>
             <div className="rounded-full hover:bg-white/10 transition duration-200 p-3 cursor-pointer">
               <AiOutlineRetweet />
             </div>
