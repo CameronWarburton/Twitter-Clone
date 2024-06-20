@@ -1,7 +1,7 @@
 "use client";
 
 import { AiOutlineRetweet } from "react-icons/ai";
-import {  BsDot, BsThreeDots } from "react-icons/bs";
+import { BsDot, BsThreeDots } from "react-icons/bs";
 import { IoShareOutline, IoStatsChart } from "react-icons/io5";
 import { TweetType, getLikesCount, isLiked } from "@/lib/supabase/queries";
 import dayjs from "dayjs";
@@ -9,6 +9,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import LikeButton from "./like-button";
 import type { Profile, Tweet } from "@/lib/db/schema";
 import ReplyDialog from "./reply-dialog";
+import { useRouter } from "next/navigation";
 
 dayjs.extend(relativeTime);
 
@@ -23,6 +24,9 @@ type TweetProps = {
 };
 
 const Tweet = async ({ tweet, likesCount, hasLiked }: TweetProps) => {
+
+  const router = useRouter
+
   return (
     <>
       <div className="border-b-[0.5px] border-gray-600 p-2 flex space-x-4 w-full">
@@ -47,10 +51,12 @@ const Tweet = async ({ tweet, likesCount, hasLiked }: TweetProps) => {
               <BsThreeDots />
             </div>
           </div>
-          <div className="text-white text-base">{tweet.tweetDetails.text}</div>
+          <div onClick={() => {
+            router.push(`tweet/${tweet.tweetDetails.id}`)
+          }} className="text-white text-base w-full cursor-pointer hover:bg-white/5 transition-all">{tweet.tweetDetails.text}</div>
           <div className="bg-slate-400 aspect-square w-full h-80 rounded-xl mt-2"></div>
           <div className="flex items-center justify-start space-x-20 mt-2 w-full">
-            <ReplyDialog tweet={tweet}/>
+            <ReplyDialog tweet={tweet} />
             <div className="rounded-full hover:bg-white/10 transition duration-200 p-3 cursor-pointer">
               <AiOutlineRetweet />
             </div>
