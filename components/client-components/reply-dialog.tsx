@@ -8,6 +8,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { Profile, Tweet } from "@/lib/db/schema";
 import { useSupabase } from "@/app/supabase-provider";
 import { toast } from "sonner";
+import { reply } from "@/lib/supabase/mutation";
 
 dayjs.extend(relativeTime);
 
@@ -19,14 +20,15 @@ type ReplyDialogProps = {
 };
 
 const ReplyDialog = ({ tweet }: ReplyDialogProps) => {
+  const [isReplyDialogOpen, setIsReplyDialogOpen] = useState(false);
 
-    let [isReplyPending, startTransition] = useTransition();
-    const {supabase} = useSupabase()
+  let [isReplyPending, startTransition] = useTransition();
+  const { supabase } = useSupabase();
 
   const [replyText, setReplyText] = useState<string>("");
 
   return (
-    <Dialog>
+    <Dialog onOpenChange={setIsReplyDialogOpen} open={isReplyDialogOpen}>
       <DialogTrigger asChild>
         <button
           onClick={() => {}}
@@ -75,43 +77,50 @@ const ReplyDialog = ({ tweet }: ReplyDialogProps) => {
             onChange={(e) => setReplyText(e.target.value)}
             className="w-full h-full text-2xl placeholder:text-gray-600 bg-transparent border-b-[0.5px] border-gray-600 p-4 outline-none "
           />
-          
         </div>
         <div className="w-full justify-between items-center flex">
-            <div></div>
-            <div className="w-full max-w-[100px]">
-              <button
-                 disabled={isReplyPending}
-                 onClick={() => {
-                   supabase.auth
-                     .getUser()
-                     .then((res) => {
-                       if (res.data && res.data.user) {
-                         const user = res.data.user;
-                         startTransition(() =>
-                        {
-                            //    insert a row into the db, reply table
-                            }
-                         );
-                       } else {
-                         toast("please login to reply to a tweet");
-                       }
-                     })
-                     .catch(() => {
-                       toast.error("authentication failed");
-                     });
-                 }}
-                className="rounded-full bg-twitterColor px-4 py-2 w-full text-lg text-center hover:bg-opacity-70 transition duration-200 font-bold"
-              >
-                Reply
-              </button>
-              {/* <button
+          <div></div>
+          <div className="w-full max-w-[100px]">
+            <button
+              disabled={isReplyPending}
+              onClick={() => {
+                supabase.auth
+                  .getUser()
+                  .then((res) => {
+                    if (res.data && res.data.user) {
+                      const user = res.data.user;
+                      startTransition(() => {
+                        reply({
+                          replyText,
+                          tweetId: tweet.tweetDetails.id,
+                          userId: user.id,
+                        })
+                          .then(() => {
+                            setIsReplyDialogOpen(false);
+                          })
+                          .catch(() => {
+                            toast.error("something went wrong with db");
+                          });
+                      });
+                    } else {
+                      toast("please login to reply to a tweet");
+                    }
+                  })
+                  .catch(() => {
+                    toast.error("authentication failed");
+                  });
+              }}
+              className="rounded-full bg-twitterColor px-4 py-2 w-full text-lg text-center hover:bg-opacity-70 transition duration-200 font-bold"
+            >
+              Reply
+            </button>
+            {/* <button
                 ref={resetRef}
                 className="invisible"
                 type="reset"
               ></button> */}
-            </div>
           </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

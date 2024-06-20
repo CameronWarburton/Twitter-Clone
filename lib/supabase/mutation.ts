@@ -3,7 +3,7 @@
 import { supabaseServer } from ".";
 import { revalidatePath } from "next/cache";
 import { db } from "../db";
-import { likes } from "../db/schema";
+import { likes, replies } from "../db/schema";
 
 export const likeTweet = async ({
   tweetId,
@@ -39,4 +39,23 @@ export const unLikeTweet = async ({
 
   revalidatePath("/");
   console.log({ data, error });
+};
+
+export const reply = async ({
+  tweetId,
+  userId,
+  replyText,
+}: {
+  tweetId: string;
+  userId: string;
+  replyText: string;
+}) => {
+
+  if(replyText === "") return; 
+
+  await db.insert(replies).values({
+    text: replyText,
+    userId,
+    tweetId,
+  });
 };
