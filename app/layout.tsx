@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import SupabaseProvider from "./supabase-provider";
+import LeftSidebar from "@/components/left-sidebar";
+import RigthSection from "@/components/right-section";
 
 export const metadata: Metadata = {
   title: "Twitter Clone",
@@ -15,7 +17,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        
+        <div className="w-full h-full flex justify-center items-center relative bg-black text-white">
+      <div className="xl:max-w-[70vw] w-full h-full flex relative">
+        <LeftSidebar />
         <SupabaseProvider>{children}</SupabaseProvider>
+        <RigthSection />
+      </div>
+    </div>
         </body>
     </html>
   );

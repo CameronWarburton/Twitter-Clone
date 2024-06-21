@@ -18,6 +18,8 @@ export const getTweets = async (currentUserID?: string) => {
   try {
     const rows = await db
       .select({
+        tweets,
+        profiles,
         ...(currentUserID
           ? {
               hasLiked: exists(
@@ -33,9 +35,7 @@ export const getTweets = async (currentUserID?: string) => {
               ),
             }
           : {}),
-        tweets,
         likes,
-        profiles,
       })
       .from(tweets)
       .leftJoin(likes, eq(tweets.id, likes.tweetId))

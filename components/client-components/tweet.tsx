@@ -25,7 +25,7 @@ type TweetProps = {
 
 const Tweet = async ({ tweet, likesCount, hasLiked }: TweetProps) => {
 
-  const router = useRouter
+  const router = useRouter()
 
   return (
     <>
