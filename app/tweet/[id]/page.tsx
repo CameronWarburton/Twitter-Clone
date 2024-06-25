@@ -37,14 +37,14 @@ const TweetPage = async ({ params }: { params: { id: string } }) => {
         likes,
       })
       .from(tweets)
+      .where(eq(tweets.id, params.id))
       .leftJoin(likes, eq(tweets.id, likes.tweetId))
       .innerJoin(profiles, eq(tweets.profileId, profiles.id))
-      .limit(10)
 
   return (
     <main className="flex w-full h-full min-h-screen flex-col border-l-[0.5px] border-r-[0.5px] border-gray-600">
      <Tweet 
-     hasLiked
+     hasLiked={tweet}
      />
     </main>
   );
