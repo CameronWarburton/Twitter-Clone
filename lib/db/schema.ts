@@ -38,7 +38,7 @@ export const tweets = pgTable("tweets", {
 
 export type Tweet = InferSelectModel<typeof tweets>
 
-export const tweetsRelations = relations(tweets, ({ one, many }) => ({
+export const tweetsRelations = relations(tweets, ({ one }) => ({
   profile: one(profiles, {
     fields: [tweets.profileId],
     references: [profiles.id],

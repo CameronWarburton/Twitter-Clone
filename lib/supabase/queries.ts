@@ -13,10 +13,14 @@ export type TweetType = Database["public"]["Tables"]["tweets"]["Row"] & {
   >;
 };
 
-
-export const getTweets = async (currentUserID?: string) => {
+export const getTweets = async (
+  currentUserID?: string,
+  getSingleTweetId?: string,
+  orderBy?: boolean,
+  limit?: number
+) => {
   try {
-    const rows = await db
+    let query = db
       .select({
         tweets,
         profiles,
@@ -40,11 +44,21 @@ export const getTweets = async (currentUserID?: string) => {
       .from(tweets)
       .leftJoin(likes, eq(tweets.id, likes.tweetId))
       .innerJoin(profiles, eq(tweets.profileId, profiles.id))
-      .orderBy(desc(tweets.createdAt))
-      .limit(10)
-      .catch(() => {
-        // err = "something went wrong while fetching all the tweets";
-      });
+      .orderBy(desc(tweets.createdAt));
+
+    if (orderBy) {
+      query = query.orderBy(desc(tweets.createdAt));
+    }
+
+    if (getSingleTweetId) {
+      query = query.where(eq(tweets.id, getSingleTweetId));
+    }
+
+    if (limit) {
+      query = query.limit(limit);
+    }
+
+    const rows = await query;
 
     if (rows) {
       const result = rows.reduce<
