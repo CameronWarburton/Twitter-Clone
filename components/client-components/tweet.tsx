@@ -3,7 +3,6 @@
 import { AiOutlineRetweet } from "react-icons/ai";
 import { BsDot, BsThreeDots } from "react-icons/bs";
 import { IoShareOutline, IoStatsChart } from "react-icons/io5";
-import { TweetType, getLikesCount, isLiked } from "@/lib/supabase/queries";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import LikeButton from "./like-button";
@@ -23,7 +22,7 @@ type TweetProps = {
   hasLiked: boolean;
 };
 
-const Tweet = async ({ tweet, likesCount, hasLiked }: TweetProps) => {
+const Tweet = ({ tweet, likesCount, hasLiked }: TweetProps) => {
 
   const router = useRouter()
 
