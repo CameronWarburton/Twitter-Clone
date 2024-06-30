@@ -3,7 +3,7 @@
 import { Database } from "../supabase.types";
 import { supabaseServer } from ".";
 import { db } from "../db";
-import { Like, Profile, Tweet, likes, profiles, tweets } from "../db/schema";
+import { Like, Profile, Tweet, likes, profiles, tweets, tweetsReplies } from "../db/schema";
 import { and, desc, eq, exists } from "drizzle-orm";
 
 export type TweetType = Database["public"]["Tables"]["tweets"]["Row"] & {
@@ -13,12 +13,21 @@ export type TweetType = Database["public"]["Tables"]["tweets"]["Row"] & {
   >;
 };
 
-export const getTweets = async (
-  currentUserID?: string,
-  getSingleTweetId?: string,
-  orderBy?: boolean,
-  limit?: number
-) => {
+export const getTweets = async ({
+  currentUserID,
+  getSingleTweetId,
+  limit,
+  orderBy,
+  replyId,
+  profileUsername,
+}: {
+  currentUserID?: string;
+  getSingleTweetId?: string;
+  orderBy?: boolean;
+  limit?: number;
+  replyId?: string;
+  profileUsername?: string;
+}) => {
   try {
     let query = db
       .select({
@@ -40,9 +49,12 @@ export const getTweets = async (
             }
           : {}),
         likes,
+        tweetsReplies,
       })
       .from(tweets)
+      .where(eq(tweets.isReply, Boolean(replyId)))
       .leftJoin(likes, eq(tweets.id, likes.tweetId))
+      .leftJoin(tweetsReplies, eq(tweets.id, tweetsReplies.replyId))
       .innerJoin(profiles, eq(tweets.profileId, profiles.id))
       .orderBy(desc(tweets.createdAt));
 
@@ -71,6 +83,7 @@ export const getTweets = async (
         const like = row.likes;
         const profile = row.profiles;
         const hasLiked = Boolean(row.hasLiked);
+        const reply = row.tweetsReplies;
 
         if (!acc[tweet.id]) {
           acc[tweet.id] = { tweet, likes: [], profile, hasLiked };

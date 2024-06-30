@@ -7,10 +7,6 @@ import { cookies } from "next/headers";
 import { and, eq, exists } from "drizzle-orm";
 import { getTweets } from "@/lib/supabase/queries";
 import { BsDot, BsThreeDots } from "react-icons/bs";
-import { AiOutlineRetweet } from "react-icons/ai";
-import ReplyDialog from "@/components/client-components/reply-dialog";
-import LikeButton from "@/components/client-components/like-button";
-import { IoShareOutline, IoStatsChart } from "react-icons/io5";
 
 const TweetPage = async ({ params }: { params: { id: string } }) => {
   const supabaseClient = createServerComponentClient({
@@ -20,14 +16,16 @@ const TweetPage = async ({ params }: { params: { id: string } }) => {
   const { data: userData, error: userError } =
     await supabaseClient.auth.getUser();
 
-  const tweet = await getTweets(userData.user?.id, params.id);
-
-  const repliesRes = await db.query.replies.findMany({
-    with: {
-      profile: true,
-    },
-    where: eq(replies.tweetId, params.id),
+  const tweet = await getTweets({
+    currentUserID: userData.user?.id,
+    getSingleTweetId: params.id,
   });
+
+  const repliesRes = await getTweets({
+    currentUserID: userData.user?.id,
+    orderBy: true,
+    replyId: tweet[0].tweet.id
+  })
 
   console.log(replies);
 
@@ -46,35 +44,22 @@ const TweetPage = async ({ params }: { params: { id: string } }) => {
       ) : (
         <div>no tweet found</div>
       )}
-      {repliesRes.map((reply) => (
-        <div
-          key={reply.id}
-          className="border-b-[0.5px] border-gray-600 p-2 flex space-x-4 w-full"
-        >
-          <div>
-            <div className="w-10 h-10 bg-slate-200 rounded-full" />
-          </div>
-          <div className="flex flex-col w-full">
-            <div className="flex items-center w-full justify-between">
-              <div className="flex items-center space-x-1 w-full">
-                <div className="font-bold">{reply.profile.fullName ?? ""}</div>
-                <div className="text-gray-500">@{reply.profile.username}</div>
-                <div className="text-gray-500">
-                  <BsDot />
-                </div>
-              </div>
-              <div>
-                <BsThreeDots />
-              </div>
-            </div>
-            <div
-              className="text-white text-base w-full transition-all"
-            >
-              {reply.text}
-            </div>
-          </div>
-        </div>
-      ))}
+      {repliesRes && 
+      repliesRes.map(({ hasLiked, likes, profile, replies, tweet }) => {
+        return (
+          <Tweet
+          key={tweet.id}
+          hasLiked={hasLiked}
+          likesCount={likes.length}
+          tweet={{
+            tweetDetails: tweet,
+            userProfile: profile.
+          }}
+          repliesCount={replies.length}
+          currentUserId={userData.user?.id}
+          />
+        );
+      })}
     </main>
   );
 };

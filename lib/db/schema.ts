@@ -7,6 +7,8 @@ import {
   uuid,
   AnyPgColumn,
   uniqueIndex,
+  boolean,
+  alias,
 } from "drizzle-orm/pg-core";
 
 export const profiles = pgTable("profiles", {
@@ -34,9 +36,13 @@ export const tweets = pgTable("tweets", {
     .references(() => profiles.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  isReply: boolean("is_reply").notNull().default(false),
+  replyId: uuid("reply_id").references((): AnyPgColumn => tweets.id),
 });
 
 export type Tweet = InferSelectModel<typeof tweets>
+
+export const tweetsReplies = alias(tweets, "tweets_replies");
 
 export const tweetsRelations = relations(tweets, ({ one }) => ({
   profile: one(profiles, {

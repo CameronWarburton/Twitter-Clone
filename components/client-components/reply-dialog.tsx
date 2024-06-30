@@ -17,9 +17,10 @@ type ReplyDialogProps = {
     userProfile: Profile;
     tweetDetails: Tweet;
   };
+  repliesCount: number;
 };
 
-const ReplyDialog = ({ tweet }: ReplyDialogProps) => {
+const ReplyDialog = ({ tweet, repliesCount }: ReplyDialogProps) => {
   const [isReplyDialogOpen, setIsReplyDialogOpen] = useState(false);
 
   let [isReplyPending, startTransition] = useTransition();
@@ -35,6 +36,7 @@ const ReplyDialog = ({ tweet }: ReplyDialogProps) => {
           className="rounded-full hover:bg-white/10 transition duration-200 p-3 cursor-pointer"
         >
           <BsChat />
+          <span>{repliesCount || 0}</span>
         </button>
       </DialogTrigger>
       <DialogContent className="bg-black sm:max-w-2xl border-none text-white">
