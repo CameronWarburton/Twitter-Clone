@@ -12,7 +12,7 @@ const MainComponent = async () => {
   const { data: userData, error: userError } =
     await supabaseClient.auth.getUser();
 
-  const res = await getTweets(userData.user?.id);
+  const res = await getTweets({currentUserID: userData.user?.id});
 
   return (
     <main className="flex w-full h-full min-h-screen flex-col border-l-[0.5px] border-r-[0.5px] border-gray-600">
@@ -25,7 +25,7 @@ const MainComponent = async () => {
       </div>
       <div className="w-full">
         {res &&
-        res.map(({ likes, tweet, profile, hasLiked  }) => {
+        res.map(({ likes, tweet, profile, hasLiked, replies  }) => {
           return (
             <Tweet
               key={tweet.id}
@@ -40,6 +40,7 @@ const MainComponent = async () => {
               likesCount={likes.length}
               currentUserId={userData.user?.id}
               hasLiked={hasLiked}
+              repliesCount={replies.length}
             />
           );
         })}

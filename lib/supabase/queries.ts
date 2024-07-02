@@ -76,7 +76,7 @@ export const getTweets = async ({
       const result = rows.reduce<
         Record<
           string,
-          { tweet: Tweet; likes: Like[]; profile: Profile; hasLiked: boolean }
+          { tweet: Tweet; likes: Like[]; profile: Profile; hasLiked: boolean, replies: Tweet[] }
         >
       >((acc, row) => {
         const tweet = row.tweets;
@@ -86,11 +86,25 @@ export const getTweets = async ({
         const reply = row.tweetsReplies;
 
         if (!acc[tweet.id]) {
-          acc[tweet.id] = { tweet, likes: [], profile, hasLiked };
+          acc[tweet.id] = { tweet, likes: [], profile, hasLiked, replies: [], };
         }
 
         if (like) {
           acc[tweet.id].likes.push(like);
+          const ids = acc[tweet.id].likes.map(({ id }) => id);
+          const filteredLikesArr = acc[tweet.id].likes.filter(
+            ({ id }, index) => !ids.includes(id, index + 1)
+          );
+          acc[tweet.id].likes = filteredLikesArr;
+        }
+
+        if (reply) {
+          acc[tweet.id].replies.push(reply);
+          const ids = acc[tweet.id].replies.map(({ id }) => id);
+          const filteredRepliesArr = acc[tweet.id].replies.filter(
+            ({ id }, index) => !ids.includes(id, index + 1)
+          );
+          acc[tweet.id].replies = filteredRepliesArr;
         }
 
         return acc;
