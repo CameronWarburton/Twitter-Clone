@@ -4,9 +4,8 @@ import { likes, profiles, replies, tweets } from "@/lib/db/schema";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import React from "react";
 import { cookies } from "next/headers";
-import { and, eq, exists } from "drizzle-orm";
 import { getTweets } from "@/lib/supabase/queries";
-import { BsDot, BsThreeDots } from "react-icons/bs";
+import { redirect } from "next/navigation";
 
 const TweetPage = async ({ params }: { params: { id: string } }) => {
   const supabaseClient = createServerComponentClient({
@@ -21,13 +20,16 @@ const TweetPage = async ({ params }: { params: { id: string } }) => {
     getSingleTweetId: params.id,
   });
 
+  if (!tweet) {
+    redirect("/");
+  }
+
   const repliesRes = await getTweets({
     currentUserID: userData.user?.id,
     orderBy: true,
     replyId: tweet[0].tweet.id
   })
 
-  console.log(replies);
 
   return (
     <main className="flex w-full h-full min-h-screen flex-col border-l-[0.5px] border-r-[0.5px] border-gray-600">
@@ -40,6 +42,7 @@ const TweetPage = async ({ params }: { params: { id: string } }) => {
             userProfile: tweet[0].profile,
           }}
           currentUserId={userData.user?.id}
+          repliesCount={tweet[0].replies.length}
         />
       ) : (
         <div>no tweet found</div>

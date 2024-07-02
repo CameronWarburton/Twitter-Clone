@@ -49,6 +49,10 @@ export const tweetsRelations = relations(tweets, ({ one }) => ({
     fields: [tweets.profileId],
     references: [profiles.id],
   }),
+  tweet: one(tweets, {
+    fields: [tweets.replyId],
+    references: [tweets.id],
+  })
 }));
 
 export const hashtags = pgTable("hashtags", {
