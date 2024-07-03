@@ -23,9 +23,13 @@ type TweetProps = {
   repliesCount: number;
 };
 
-const Tweet = async ({ tweet, likesCount, hasLiked, repliesCount }: TweetProps) => {
-
-  const router = useRouter()
+const Tweet = async ({
+  tweet,
+  likesCount,
+  hasLiked,
+  repliesCount,
+}: TweetProps) => {
+  const router = useRouter();
 
   return (
     <>
@@ -51,9 +55,14 @@ const Tweet = async ({ tweet, likesCount, hasLiked, repliesCount }: TweetProps) 
               <BsThreeDots />
             </div>
           </div>
-          <div onClick={() => {
-            router.push(`/tweet/${tweet.tweetDetails.id}`)
-          }} className="text-white text-base w-full cursor-pointer hover:bg-white/5 transition-all">{tweet.tweetDetails.text}</div>
+          <div
+            onClick={() => {
+              router.push(`/tweet/${tweet.tweetDetails.id}`);
+            }}
+            className="text-white text-base w-full cursor-pointer hover:bg-white/5 transition-all"
+          >
+            {tweet.tweetDetails.text}
+          </div>
           <div className="bg-slate-400 aspect-square w-full h-80 rounded-xl mt-2"></div>
           <div className="flex items-center justify-start space-x-20 mt-2 w-full">
             <ReplyDialog tweet={tweet} repliesCount={repliesCount} />
