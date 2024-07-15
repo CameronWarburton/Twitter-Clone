@@ -41,7 +41,7 @@ const ComposeTweet = () => {
       profileId: userData.user.id,
     }).returning().catch((error) => {
       console.log(error)
-      err = "something wromg with server"
+      err = "something wrong with server"
     })
 
     console.log(res)
