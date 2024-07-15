@@ -51,4 +51,6 @@ const ComposeTweetForm = ({ serverAction }: ComposeTweetFormProps) => {
   );
 };
 
+console.log(ComposeTweetForm)
+
 export default ComposeTweetForm;

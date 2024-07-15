@@ -33,22 +33,24 @@ const ComposeTweet = () => {
 
     if (userError) return;
 
-    let err = ''
+    let err = "";
 
-    const res = await db.insert(tweets).values({
-      text: tweet.toString(),
-      id: randomUUID(),
-      profileId: userData.user.id,
-    }).returning().catch((error) => {
-      console.log(error)
-      err = "something wrong with server"
-    })
-
-    console.log(res)
+    const res = await db
+      .insert(tweets)
+      .values({
+        text: tweet.toString(),
+        id: randomUUID(),
+        profileId: userData.user.id,
+      })
+      .returning()
+      .catch((error) => {
+        console.log(error);
+        err = "something wrong with server";
+      });
 
     revalidatePath("/");
 
-    return { data:res, error:err };
+    return { data: res, error: err };
   }
 
   return <ComposeTweetForm serverAction={submitTweet} />;
