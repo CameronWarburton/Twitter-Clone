@@ -3,8 +3,17 @@
 import { Database } from "../supabase.types";
 import { supabaseServer } from ".";
 import { db } from "../db";
-import { Like, Profile, Tweet, likes, profiles, tweets, tweetsReplies } from "../db/schema";
+import {
+  Like,
+  Profile,
+  Tweet,
+  likes,
+  profiles,
+  tweets,
+  tweetsReplies,
+} from "../db/schema";
 import { and, desc, eq, exists } from "drizzle-orm";
+import { reply } from "./mutation";
 
 export type TweetType = Database["public"]["Tables"]["tweets"]["Row"] & {
   profiles: Pick<
@@ -70,13 +79,29 @@ export const getTweets = async ({
       query = query.limit(limit);
     }
 
+    if (replyId) {
+      query = query.where(eq(tweets.replyId, replyId));
+    }
+
+    if (profileUsername) {
+      query = query.where(
+        and(eq(profiles.username, profileUsername), eq(tweets.isReply, false))
+      );
+    }
+
     const rows = await query;
 
     if (rows) {
       const result = rows.reduce<
         Record<
           string,
-          { tweet: Tweet; likes: Like[]; profile: Profile; hasLiked: boolean, replies: Tweet[] }
+          {
+            tweet: Tweet;
+            likes: Like[];
+            profile: Profile;
+            hasLiked: boolean;
+            replies: Tweet[];
+          }
         >
       >((acc, row) => {
         const tweet = row.tweets;
@@ -86,7 +111,7 @@ export const getTweets = async ({
         const reply = row.tweetsReplies;
 
         if (!acc[tweet.id]) {
-          acc[tweet.id] = { tweet, likes: [], profile, hasLiked, replies: [], };
+          acc[tweet.id] = { tweet, likes: [], profile, hasLiked, replies: [] };
         }
 
         if (like) {
